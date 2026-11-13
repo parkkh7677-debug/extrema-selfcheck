@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>극값 서술형 셀프 체크 — 내 풀이, 몇 단계까지 왔나?</title>
+    <meta
+      name="description"
+      content="함수의 극대·극소 서술형 문제를 푼 뒤 채점 기준 5단계별로 자기 풀이를 점검하고 보완 피드백과 모범 풀이를 확인하는 웹앱"
+    />
+    <meta property="og:title" content="극값 서술형 셀프 체크 — 내 풀이, 몇 단계까지 왔나?" />
+    <meta
+      property="og:description"
+      content="함수의 극대·극소 서술형 문제를 푼 뒤 채점 기준 5단계별로 자기 풀이를 점검하고 보완 피드백과 모범 풀이를 확인하는 웹앱"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        --bg-canvas: #f8fafc;
+        --bg-paper: #ffffff;
+        --bg-subtle: #f1f5f9;
+        --border-hairline: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+
+        --navy: #1e3a8a;
+        --navy-hover: #172554;
+        --navy-soft: #eff6ff;
+        --navy-border: #bfdbfe;
+
+        --green: #16a34a;
+        --green-hover: #15803d;
+        --green-text: #166534;
+        --green-soft: #f0fdf4;
+        --green-border: #bbf7d0;
+
+        --amber: #f59e0b;
+        --amber-text: #92400e;
+        --amber-soft: #fffbeb;
+        --amber-border: #fde68a;
+
+        --shadow-card: 0 4px 20px rgba(15, 23, 42, 0.045);
+        --radius-card: 20px;
+        --radius-btn: 16px;
+        --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background-color: var(--bg-canvas);
+        color: var(--text-primary);
+        font-family:
+          'Pretendard Variable',
+          'Pretendard',
+          'Apple SD Gothic Neo',
+          'Noto Sans KR',
+          'Malgun Gothic',
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* 은은한 모눈 노트 배경 */
+      body {
+        background-image:
+          linear-gradient(to right, rgba(226, 232, 240, 0.45) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(226, 232, 240, 0.45) 1px, transparent 1px);
+        background-size: 28px 28px;
+      }
+
+      button {
+        font-family: inherit;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+        color: inherit;
+        touch-action: manipulation;
+      }
+
+      button:focus-visible {
+        outline: 3px solid var(--navy);
+        outline-offset: 2px;
+      }
+
+      .app-shell {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px 16px 40px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      /* 상단 헤더 */
+      .app-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 6px 4px;
+      }
+
+      .brand-title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--navy);
+        white-space: nowrap;
+      }
+
+      .brand-sub {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .header-link-btn {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        padding: 8px 12px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 10px;
+        white-space: nowrap;
+        transition:
+          background-color 140ms var(--ease-tactile),
+          color 140ms var(--ease-tactile);
+      }
+
+      .header-link-btn:hover {
+        background-color: var(--bg-subtle);
+        color: var(--text-primary);
+      }
+
+      /* 노트 카드 공통 */
+      .notebook-card {
+        position: relative;
+        background-color: var(--bg-paper);
+        border: 1px solid var(--border-hairline);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        padding: 24px 20px;
+        overflow: hidden;
+      }
+
+      /* 상단 노트 제본 라인 장식 */
+      .notebook-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background-color: var(--navy);
+      }
+
+      .meta-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .meta-dot {
+        color: var(--border-strong);
+        user-select: none;
+      }
+
+      /* 수식 텍스트 스타일 */
+      .math-expr {
+        font-family: 'Cambria Math', 'Georgia', 'Times New Roman', serif;
+        font-style: normal;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: var(--text-primary);
+      }
+
+      /* 문제 텍스트 */
+      .problem-prompt {
+        margin: 0 0 20px;
+        font-size: clamp(1.25rem, 4.5vw, 1.55rem);
+        font-weight: 700;
+        line-height: 1.55;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        word-break: keep-all;
+      }
+
+      .problem-formula-box {
+        background-color: var(--bg-subtle);
+        border: 1px solid var(--border-hairline);
+        border-radius: 14px;
+        padding: 18px 16px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: clamp(1.375rem, 5vw, 1.75rem);
+      }
+
+      .guide-note {
+        margin: 0 0 24px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--border-hairline);
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        word-break: keep-all;
+      }
+
+      /* 크고 둥근 터치 버튼 */
+      .btn-group-vertical {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .btn-group-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 56px;
+        padding: 14px 20px;
+        border-radius: var(--radius-btn);
+        font-size: 1.0625rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        transition:
+          transform 130ms var(--ease-tactile),
+          background-color 150ms var(--ease-tactile),
+          border-color 150ms var(--ease-tactile),
+          box-shadow 150ms var(--ease-tactile);
+      }
+
+      .btn:active {
+        transform: translateY(2px) scale(0.975);
+      }
+
+      .btn-primary {
+        background-color: var(--navy);
+        color: #ffffff;
+        box-shadow: 0 3px 0 #142862;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--navy-hover);
+      }
+
+      .btn-primary:active {
+        box-shadow: 0 1px 0 #142862;
+      }
+
+      .btn-secondary {
+        background-color: #ffffff;
+        color: var(--navy);
+        border: 1.5px solid var(--border-strong);
+        box-shadow: 0 2px 0 var(--border-hairline);
+      }
+
+      .btn-secondary:hover {
+        background-color: var(--navy-soft);
+        border-color: var(--navy);
+      }
+
+      .btn-secondary:active {
+        box-shadow: 0 0 0 var(--border-hairline);
+      }
+
+      /* 점검 단계 버튼: 했다 / 안 했다 */
+      .btn-done {
+        min-height: 64px;
+        background-color: var(--green);
+        color: #ffffff;
+        font-size: 1.125rem;
+        box-shadow: 0 4px 0 #15803d;
+      }
+
+      .btn-done:hover {
+        background-color: var(--green-hover);
+      }
+
+      .btn-done:active {
+        box-shadow: 0 1px 0 #15803d;
+      }
+
+      .btn-missed {
+        min-height: 64px;
+        background-color: var(--amber-soft);
+        color: var(--amber-text);
+        border: 2px solid var(--amber);
+        font-size: 1.125rem;
+        box-shadow: 0 4px 0 #d97706;
+      }
+
+      .btn-missed:hover {
+        background-color: #fef3c7;
+      }
+
+      .btn-missed:active {
+        box-shadow: 0 1px 0 #d97706;
+      }
+
+      /* 점검 중 상단 문제 리마인더 */
+      .reminder-bar {
+        background-color: var(--bg-paper);
+        border: 1px solid var(--border-hairline);
+        border-radius: 14px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .reminder-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .reminder-formula {
+        font-size: 1.0625rem;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      /* 5단계 세그먼트 진행 바 */
+      .step-segments {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        margin-bottom: 20px;
+      }
+
+      .step-seg {
+        height: 8px;
+        border-radius: 4px;
+        background-color: var(--bg-subtle);
+        transition: background-color 200ms var(--ease-tactile);
+      }
+
+      .step-seg.is-done {
+        background-color: var(--green);
+      }
+
+      .step-seg.is-missed {
+        background-color: var(--amber);
+      }
+
+      .step-seg.is-active {
+        background-color: var(--navy);
+      }
+
+      /* 단계 카드 내용 */
+      .step-counter {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 6px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .step-title {
+        margin: 0 0 16px;
+        font-size: clamp(1.5rem, 5.5vw, 1.875rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+        color: var(--text-primary);
+      }
+
+      .step-question {
+        margin: 0 0 14px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        line-height: 1.6;
+        color: var(--text-primary);
+        word-break: keep-all;
+      }
+
+      .step-tip {
+        margin: 0 0 28px;
+        padding: 14px 16px;
+        background-color: var(--bg-subtle);
+        border-radius: 12px;
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        line-height: 1.55;
+        word-break: keep-all;
+      }
+
+      .step-nav-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-hairline);
+      }
+
+      .text-nav-btn {
+        min-height: 44px;
+        padding: 8px 10px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .text-nav-btn:hover {
+        background-color: var(--bg-subtle);
+        color: var(--text-primary);
+      }
+
+      .text-nav-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      /* 결과 화면 */
+      .score-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .score-title {
+        margin: 0;
+        font-size: 1.375rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+      }
+
+      .score-fraction {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--navy);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .score-fraction span {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .result-progress-track {
+        width: 100%;
+        height: 16px;
+        background-color: var(--amber-soft);
+        border: 1px solid var(--amber-border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .result-progress-fill {
+        height: 100%;
+        background-color: var(--green);
+        transition: width 350ms var(--ease-tactile);
+      }
+
+      .score-summary-msg {
+        margin: 0;
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        word-break: keep-all;
+      }
+
+      /* 단계별 피드백 목록 */
+      .section-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 4px 2px;
+      }
+
+      .section-heading {
+        margin: 0;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .feedback-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .feedback-item {
+        background-color: var(--bg-paper);
+        border: 1px solid var(--border-hairline);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.025);
+      }
+
+      .feedback-item.is-missed {
+        border-color: var(--amber-border);
+      }
+
+      .feedback-item.is-done {
+        border-color: var(--green-border);
+      }
+
+      .feedback-head {
+        width: 100%;
+        min-height: 58px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-align: left;
+        background-color: var(--bg-paper);
+      }
+
+      .feedback-item.is-missed .feedback-head {
+        background-color: var(--amber-soft);
+      }
+
+      .feedback-item.is-done .feedback-head {
+        background-color: var(--green-soft);
+      }
+
+      .feedback-head-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .status-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .is-done .status-icon {
+        background-color: var(--green);
+        color: #ffffff;
+      }
+
+      .is-missed .status-icon {
+        background-color: var(--amber);
+        color: #ffffff;
+      }
+
+      .feedback-step-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        word-break: keep-all;
+      }
+
+      .feedback-head-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .status-label {
+        font-size: 0.875rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .is-done .status-label {
+        color: var(--green-text);
+      }
+
+      .is-missed .status-label {
+        color: var(--amber-text);
+      }
+
+      .chevron-icon {
+        color: var(--text-muted);
+        transition: transform 180ms var(--ease-tactile);
+      }
+
+      .feedback-item.is-open .chevron-icon {
+        transform: rotate(180deg);
+      }
+
+      .feedback-body {
+        display: none;
+        padding: 16px;
+        border-top: 1px solid var(--border-hairline);
+        background-color: #ffffff;
+      }
+
+      .feedback-item.is-open .feedback-body {
+        display: block;
+      }
+
+      .feedback-advice {
+        margin: 0 0 14px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        line-height: 1.55;
+        word-break: keep-all;
+      }
+
+      .is-missed .feedback-advice {
+        background-color: var(--amber-soft);
+        color: var(--amber-text);
+      }
+
+      .is-done .feedback-advice {
+        background-color: var(--green-soft);
+        color: var(--green-text);
+      }
+
+      .model-sol-label {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 8px;
+      }
+
+      .model-sol-box {
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+        line-height: 1.7;
+        word-break: keep-all;
+      }
+
+      .model-sol-box p {
+        margin: 0 0 6px;
+      }
+
+      .model-sol-box p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* 증감표 스타일 */
+      .sign-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 8px;
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+      }
+
+      .sign-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        font-size: 0.875rem;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .sign-table th,
+      .sign-table td {
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--border-hairline);
+        border-right: 1px solid var(--border-hairline);
+        white-space: nowrap;
+      }
+
+      .sign-table th {
+        background-color: var(--bg-subtle);
+        font-weight: 700;
+        color: var(--navy);
+        width: 56px;
+      }
+
+      .sign-table tr:last-child th,
+      .sign-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .sign-table td:last-child {
+        border-right: none;
+      }
+
+      .sign-table .val-zero {
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .sign-table .ext-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--navy);
+      }
+
+      /* 화면 전환 애니메이션 */
+      .fade-enter {
+        animation: fadeSlideIn 180ms var(--ease-tactile) both;
+      }
+
+      @keyframes fadeSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (min-width: 768px) {
+        .app-shell {
+          padding: 28px 24px 56px;
+        }
+        .container {
+          max-width: 720px;
+          gap: 20px;
+        }
+        .notebook-card {
+          padding: 32px 32px;
+        }
+        .btn-group-vertical.desktop-row {
+          flex-direction: row;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .fade-enter {
+          animation: none;
+        }
+        .btn,
+        .step-seg,
+        .result-progress-fill,
+        .chevron-icon {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="container">
+        <header class="app-header">
+          <div>
+            <h1 class="brand-title">극값 서술형 셀프 체크</h1>
+            <p class="brand-sub">내 풀이, 몇 단계까지 왔나?</p>
+          </div>
+          <button
+            type="button"
+            id="header-reset-btn"
+            class="header-link-btn"
+            style="display: none"
+            aria-label="문제 화면으로 돌아가기"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            문제로
+          </button>
+        </header>
+
+        <main id="app-main" aria-live="polite"></main>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        // 5단계 고정 채점 기준 메타데이터
+        const STEP_TEMPLATES = [
+          {
+            id: 1,
+            label: "① f'(x) 구하기",
+            shortName: "① f'(x) 구하기",
+            question: "주어진 함수 f(x)를 미분해 도함수 f'(x)를 정확히 구했나요?",
+            tip: "각 항의 지수를 앞으로 내리고 차수를 1씩 낮추었는지, 상수항은 0으로 처리했는지 확인하세요.",
+            feedbackIfMissed: "도함수 f'(x)를 구하는 식을 쓰지 않으면 이후 모든 단계의 채점 근거가 사라져요."
+          },
+          {
+            id: 2,
+            label: "② f'(x) = 0 풀기",
+            shortName: "② f'(x) = 0 풀기",
+            question: "f'(x) = 0을 인수분해하여 극값의 후보가 되는 x값을 모두 구했나요?",
+            tip: "공통인수로 먼저 묶고 인수분해했는지, 중근이나 x = 0 같은 해를 빠뜨리지 않았는지 확인하세요.",
+            feedbackIfMissed: "f'(x) = 0이 되는 x값을 구하는 풀이 과정을 적어야 부분 점수를 받을 수 있어요."
+          },
+          {
+            id: 3,
+            label: "③ 증감표 작성",
+            shortName: "③ 증감표 작성",
+            question: "x의 구간별 f'(x)의 부호(+, −)와 f(x)의 증감(↗, ↘)을 표로 나타냈나요?",
+            tip: "각 구간에 속한 숫자 하나를 f'(x)에 대입해 부호가 +인지 −인지 직접 확인하고 화살표로 표시했나요?",
+            feedbackIfMissed: "증감표 없이 바로 극대·극소를 적으면 풀이 과정의 핵심 근거가 빠져 크게 감점돼요."
+          },
+          {
+            id: 4,
+            label: "④ 극대·극소 판정 근거 쓰기",
+            shortName: "④ 극대·극소 판정 근거 쓰기",
+            question: "각 x값의 좌우에서 f'(x)의 부호가 어떻게 바뀌는지 문장으로 밝혔나요?",
+            tip: "‘양(+)에서 음(−)으로 바뀌므로 극대’, ‘음(−)에서 양(+)으로 바뀌므로 극소’처럼 부호 변화를 명시했는지 보세요.",
+            feedbackIfMissed: "증감표만 그리고 판정 문장을 쓰지 않거나, f'(x) = 0이라는 이유만으로 극값이라 쓰면 감점돼요."
+          },
+          {
+            id: 5,
+            label: "⑤ 극값 계산",
+            shortName: "⑤ 극값 계산",
+            question: "구한 x값을 원래 함수 f(x)에 대입해 극댓값과 극솟값을 계산했나요?",
+            tip: "f'(x)가 아니라 처음 주어진 f(x)에 대입했는지, 음수의 거듭제곱 부호 실수가 없는지 확인하세요.",
+            feedbackIfMissed: "x값만 구하고 f(x) 함숫값을 계산하지 않거나, 극댓값과 극솟값을 구분해 적지 않으면 완성 점수를 못 받아요."
+          }
+        ];
+
+        // 서술형 문제 5개 (각 문제의 5단계 모범 풀이 포함)
+        const PROBLEMS = [
+          {
+            id: 1,
+            title: "기본 삼차함수의 극값",
+            promptPrefix: "함수",
+            formula: "f(x) = x³ − 3x² − 9x + 5",
+            promptSuffix: "의 극댓값과 극솟값을 구하고, 그 과정을 서술하시오.",
+            steps: [
+              {
+                solutionHtml:
+                  "<p>주어진 함수 <span class='math-expr'>f(x) = x³ − 3x² − 9x + 5</span>를 <span class='math-expr'>x</span>에 대하여 미분하면</p>" +
+                  "<p><span class='math-expr'>f'(x) = 3x² − 6x − 9</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p><span class='math-expr'>f'(x) = 0</span>에서</p>" +
+                  "<p><span class='math-expr'>3(x² − 2x − 3) = 0</span></p>" +
+                  "<p><span class='math-expr'>3(x + 1)(x − 3) = 0</span>이므로 <span class='math-expr'>x = −1</span> 또는 <span class='math-expr'>x = 3</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p>구간별 <span class='math-expr'>f'(x)</span>의 부호와 <span class='math-expr'>f(x)</span>의 증감을 표로 나타내면 다음과 같다.</p>" +
+                  buildSignTable(
+                    ["⋯", "−1", "⋯", "3", "⋯"],
+                    ["+", "0", "−", "0", "+"],
+                    ["↗", "10 (극대)", "↘", "−22 (극소)", "↗"]
+                  )
+              },
+              {
+                solutionHtml:
+                  "<p>• <span class='math-expr'>x = −1</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 양(+)에서 음(−)으로 바뀌므로 <span class='math-expr'>x = −1</span>에서 <strong>극대</strong>이다.</p>" +
+                  "<p>• <span class='math-expr'>x = 3</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 음(−)에서 양(+)으로 바뀌므로 <span class='math-expr'>x = 3</span>에서 <strong>극소</strong>이다.</p>"
+              },
+              {
+                solutionHtml:
+                  "<p>• 극댓값: <span class='math-expr'>f(−1) = (−1)³ − 3(−1)² − 9(−1) + 5 = −1 − 3 + 9 + 5 = 10</span></p>" +
+                  "<p>• 극솟값: <span class='math-expr'>f(3) = 3³ − 3·3² − 9·3 + 5 = 27 − 27 − 27 + 5 = −22</span></p>"
+              }
+            ]
+          },
+          {
+            id: 2,
+            title: "최고차항이 음수인 삼차함수",
+            promptPrefix: "함수",
+            formula: "f(x) = −x³ + 3x + 2",
+            promptSuffix: "의 극댓값과 극솟값을 구하고, 그 과정을 서술하시오.",
+            steps: [
+              {
+                solutionHtml:
+                  "<p>주어진 함수 <span class='math-expr'>f(x) = −x³ + 3x + 2</span>를 미분하면</p>" +
+                  "<p><span class='math-expr'>f'(x) = −3x² + 3</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p><span class='math-expr'>f'(x) = 0</span>에서</p>" +
+                  "<p><span class='math-expr'>−3(x² − 1) = 0</span></p>" +
+                  "<p><span class='math-expr'>−3(x + 1)(x − 1) = 0</span>이므로 <span class='math-expr'>x = −1</span> 또는 <span class='math-expr'>x = 1</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p>최고차항의 계수가 음수임에 유의하여 증감표를 작성하면 다음과 같다.</p>" +
+                  buildSignTable(
+                    ["⋯", "−1", "⋯", "1", "⋯"],
+                    ["−", "0", "+", "0", "−"],
+                    ["↘", "0 (극소)", "↗", "4 (극대)", "↘"]
+                  )
+              },
+              {
+                solutionHtml:
+                  "<p>• <span class='math-expr'>x = −1</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 음(−)에서 양(+)으로 바뀌므로 <span class='math-expr'>x = −1</span>에서 <strong>극소</strong>이다.</p>" +
+                  "<p>• <span class='math-expr'>x = 1</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 양(+)에서 음(−)으로 바뀌므로 <span class='math-expr'>x = 1</span>에서 <strong>극대</strong>이다.</p>"
+              },
+              {
+                solutionHtml:
+                  "<p>• 극솟값: <span class='math-expr'>f(−1) = −(−1)³ + 3(−1) + 2 = 1 − 3 + 2 = 0</span></p>" +
+                  "<p>• 극댓값: <span class='math-expr'>f(1) = −1³ + 3·1 + 2 = −1 + 3 + 2 = 4</span></p>"
+              }
+            ]
+          },
+          {
+            id: 3,
+            title: "상수항과 일차항이 없는 삼차함수",
+            promptPrefix: "함수",
+            formula: "f(x) = 2x³ − 6x² + 7",
+            promptSuffix: "의 극댓값과 극솟값을 구하고, 그 과정을 서술하시오.",
+            steps: [
+              {
+                solutionHtml:
+                  "<p>주어진 함수 <span class='math-expr'>f(x) = 2x³ − 6x² + 7</span>을 미분하면</p>" +
+                  "<p><span class='math-expr'>f'(x) = 6x² − 12x</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p><span class='math-expr'>f'(x) = 0</span>에서 공통인수 <span class='math-expr'>6x</span>로 묶으면</p>" +
+                  "<p><span class='math-expr'>6x(x − 2) = 0</span>이므로 <span class='math-expr'>x = 0</span> 또는 <span class='math-expr'>x = 2</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p>구간별 <span class='math-expr'>f'(x)</span>의 부호와 <span class='math-expr'>f(x)</span>의 증감을 표로 나타내면 다음과 같다.</p>" +
+                  buildSignTable(
+                    ["⋯", "0", "⋯", "2", "⋯"],
+                    ["+", "0", "−", "0", "+"],
+                    ["↗", "7 (극대)", "↘", "−1 (극소)", "↗"]
+                  )
+              },
+              {
+                solutionHtml:
+                  "<p>• <span class='math-expr'>x = 0</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 양(+)에서 음(−)으로 바뀌므로 <span class='math-expr'>x = 0</span>에서 <strong>극대</strong>이다.</p>" +
+                  "<p>• <span class='math-expr'>x = 2</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 음(−)에서 양(+)으로 바뀌므로 <span class='math-expr'>x = 2</span>에서 <strong>극소</strong>이다.</p>"
+              },
+              {
+                solutionHtml:
+                  "<p>• 극댓값: <span class='math-expr'>f(0) = 2·0³ − 6·0² + 7 = 7</span></p>" +
+                  "<p>• 극솟값: <span class='math-expr'>f(2) = 2·2³ − 6·2² + 7 = 16 − 24 + 7 = −1</span></p>"
+              }
+            ]
+          },
+          {
+            id: 4,
+            title: "극값이 3개인 사차함수",
+            promptPrefix: "함수",
+            formula: "f(x) = x⁴ − 2x² + 3",
+            promptSuffix: "의 극값을 모두 구하고, 그 과정을 서술하시오.",
+            steps: [
+              {
+                solutionHtml:
+                  "<p>주어진 함수 <span class='math-expr'>f(x) = x⁴ − 2x² + 3</span>을 미분하면</p>" +
+                  "<p><span class='math-expr'>f'(x) = 4x³ − 4x</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p><span class='math-expr'>f'(x) = 0</span>에서</p>" +
+                  "<p><span class='math-expr'>4x(x² − 1) = 0</span></p>" +
+                  "<p><span class='math-expr'>4x(x + 1)(x − 1) = 0</span>이므로 <span class='math-expr'>x = −1</span>, <span class='math-expr'>x = 0</span>, <span class='math-expr'>x = 1</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p>세 값 <span class='math-expr'>−1, 0, 1</span>을 기준으로 증감표를 작성하면 다음과 같다.</p>" +
+                  buildSignTable(
+                    ["⋯", "−1", "⋯", "0", "⋯", "1", "⋯"],
+                    ["−", "0", "+", "0", "−", "0", "+"],
+                    ["↘", "2 (극소)", "↗", "3 (극대)", "↘", "2 (극소)", "↗"]
+                  )
+              },
+              {
+                solutionHtml:
+                  "<p>• <span class='math-expr'>x = −1</span>과 <span class='math-expr'>x = 1</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 음(−)에서 양(+)으로 바뀌므로 각각 <strong>극소</strong>이다.</p>" +
+                  "<p>• <span class='math-expr'>x = 0</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 양(+)에서 음(−)으로 바뀌므로 <span class='math-expr'>x = 0</span>에서 <strong>극대</strong>이다.</p>"
+              },
+              {
+                solutionHtml:
+                  "<p>• 극댓값: <span class='math-expr'>f(0) = 0⁴ − 2·0² + 3 = 3</span></p>" +
+                  "<p>• 극솟값: <span class='math-expr'>f(−1) = (−1)⁴ − 2(−1)² + 3 = 2</span>, <span class='math-expr'>f(1) = 1⁴ − 2·1² + 3 = 2</span> (모두 2)</p>"
+              }
+            ]
+          },
+          {
+            id: 5,
+            title: "중근이 포함된 사차함수 (주의 유형)",
+            promptPrefix: "함수",
+            formula: "f(x) = x⁴ − 4x³ + 4",
+            promptSuffix: "의 극값을 구하고, 그 과정을 서술하시오.",
+            steps: [
+              {
+                solutionHtml:
+                  "<p>주어진 함수 <span class='math-expr'>f(x) = x⁴ − 4x³ + 4</span>를 미분하면</p>" +
+                  "<p><span class='math-expr'>f'(x) = 4x³ − 12x²</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p><span class='math-expr'>f'(x) = 0</span>에서 공통인수 <span class='math-expr'>4x²</span>으로 묶으면</p>" +
+                  "<p><span class='math-expr'>4x²(x − 3) = 0</span>이므로 <span class='math-expr'>x = 0</span>(중근) 또는 <span class='math-expr'>x = 3</span></p>"
+              },
+              {
+                solutionHtml:
+                  "<p><span class='math-expr'>x = 0</span> 좌우의 부호 변화에 주의하여 증감표를 작성하면 다음과 같다.</p>" +
+                  buildSignTable(
+                    ["⋯", "0", "⋯", "3", "⋯"],
+                    ["−", "0", "−", "0", "+"],
+                    ["↘", "4", "↘", "−23 (극소)", "↗"]
+                  )
+              },
+              {
+                solutionHtml:
+                  "<p>• <span class='math-expr'>x = 0</span>에서는 <span class='math-expr'>f'(0) = 0</span>이지만, 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 음(−)에서 음(−)으로 <strong>바뀌지 않으므로 극값이 아니다.</strong></p>" +
+                  "<p>• <span class='math-expr'>x = 3</span>의 좌우에서 <span class='math-expr'>f'(x)</span>의 부호가 음(−)에서 양(+)으로 바뀌므로 <span class='math-expr'>x = 3</span>에서만 <strong>극소</strong>이다.</p>",
+                extraFeedbackIfMissed:
+                  "중근 x = 0에서 f'(0) = 0이라고 극값이라 쓰면 오답 처리돼요! 부호가 바뀌지 않아 극값이 아님을 꼭 밝혀야 해요."
+              },
+              {
+                solutionHtml:
+                  "<p>• 극솟값: <span class='math-expr'>f(3) = 3⁴ − 4·3³ + 4 = 81 − 108 + 4 = −23</span></p>" +
+                  "<p>• 극댓값: <strong>없다.</strong></p>"
+              }
+            ]
+          }
+        ];
+
+        function buildSignTable(xCells, fpCells, fCells) {
+          const xRow = xCells
+            .map((cell) => {
+              const isNum = cell !== "⋯";
+              return `<td class="${isNum ? "val-zero" : ""}">${cell}</td>`;
+            })
+            .join("");
+          const fpRow = fpCells
+            .map((cell) => {
+              return `<td class="${cell === "0" ? "val-zero" : ""}">${cell}</td>`;
+            })
+            .join("");
+          const fRow = fCells
+            .map((cell) => {
+              const match = cell.match(/^(.+?)\s*\((극대|극소)\)$/);
+              if (match) {
+                return `<td><strong>${match[1]}</strong><span class="ext-label">${match[2]}</span></td>`;
+              }
+              return `<td>${cell}</td>`;
+            })
+            .join("");
+
+          return (
+            '<div class="sign-table-wrap">' +
+            '<table class="sign-table" aria-label="증감표">' +
+            "<tbody>" +
+            `<tr><th scope="row">x</th>${xRow}</tr>` +
+            `<tr><th scope="row">f'(x)</th>${fpRow}</tr>` +
+            `<tr><th scope="row">f(x)</th>${fRow}</tr>` +
+            "</tbody>" +
+            "</table>" +
+            "</div>"
+          );
+        }
+
+        // 앱 상태 (저장 없음, 현재 세션 메모리만 사용)
+        const state = {
+          view: "problem", // 'problem' | 'check' | 'result'
+          problemIndex: Math.floor(Math.random() * PROBLEMS.length),
+          currentStep: 0,
+          answers: [null, null, null, null, null], // true(했다) | false(안 했다) | null
+          expandedSteps: [false, false, false, false, false]
+        };
+
+        const mainEl = document.getElementById("app-main");
+        const headerResetBtn = document.getElementById("header-reset-btn");
+
+        headerResetBtn.addEventListener("click", function () {
+          state.view = "problem";
+          state.currentStep = 0;
+          state.answers = [null, null, null, null, null];
+          render();
+        });
+
+        function pickRandomOtherProblem() {
+          if (PROBLEMS.length <= 1) return;
+          const candidates = [];
+          for (let i = 0; i < PROBLEMS.length; i++) {
+            if (i !== state.problemIndex) candidates.push(i);
+          }
+          const next = candidates[Math.floor(Math.random() * candidates.length)];
+          state.problemIndex = next;
+          state.view = "problem";
+          state.currentStep = 0;
+          state.answers = [null, null, null, null, null];
+          state.expandedSteps = [false, false, false, false, false];
+          render();
+        }
+
+        function startCheck() {
+          state.view = "check";
+          state.currentStep = 0;
+          state.answers = [null, null, null, null, null];
+          state.expandedSteps = [false, false, false, false, false];
+          render();
+        }
+
+        function answerStep(didIt) {
+          state.answers[state.currentStep] = didIt;
+          if (state.currentStep < STEP_TEMPLATES.length - 1) {
+            state.currentStep += 1;
+            render();
+          } else {
+            // 결과 화면 진입 시 '[안 했다]'를 고른 단계는 자동으로 펼침
+            state.expandedSteps = state.answers.map(function (ans) {
+              return ans === false;
+            });
+            state.view = "result";
+            render();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }
+
+        function goPrevStep() {
+          if (state.currentStep > 0) {
+            state.currentStep -= 1;
+            render();
+          }
+        }
+
+        function render() {
+          const problem = PROBLEMS[state.problemIndex];
+          headerResetBtn.style.display = state.view === "problem" ? "none" : "inline-flex";
+
+          if (state.view === "problem") {
+            renderProblemView(problem);
+          } else if (state.view === "check") {
+            renderCheckView(problem);
+          } else {
+            renderResultView(problem);
+          }
+        }
+
+        function renderProblemView(problem) {
+          mainEl.innerHTML =
+            '<section class="notebook-card fade-enter" aria-label="서술형 문제 카드">' +
+            '<div class="meta-line">' +
+            "<span>미적분 I · 극대와 극소</span>" +
+            '<span class="meta-dot" aria-hidden="true">·</span>' +
+            `<span>문제 ${problem.id} / ${PROBLEMS.length}</span>` +
+            '<span class="meta-dot" aria-hidden="true">·</span>' +
+            `<span>${problem.title}</span>` +
+            "</div>" +
+            `<p class="problem-prompt">${problem.promptPrefix} <span class="math-expr">${problem.formula}</span>${problem.promptSuffix}</p>` +
+            `<div class="problem-formula-box"><span class="math-expr">${problem.formula}</span></div>` +
+            '<p class="guide-note">먼저 노트에 처음부터 끝까지 직접 서술형 풀이를 적어 보세요. 다 풀었다면 아래 <strong>점검 시작</strong>을 눌러 5단계 채점 기준으로 확인해 봅시다.</p>' +
+            '<div class="btn-group-vertical desktop-row">' +
+            '<button type="button" id="btn-other-problem" class="btn btn-secondary">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>' +
+            "다른 문제" +
+            "</button>" +
+            '<button type="button" id="btn-start-check" class="btn btn-primary">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' +
+            "점검 시작" +
+            "</button>" +
+            "</div>" +
+            "</section>";
+
+          document.getElementById("btn-other-problem").addEventListener("click", pickRandomOtherProblem);
+          document.getElementById("btn-start-check").addEventListener("click", startCheck);
+        }
+
+        function renderCheckView(problem) {
+          const stepMeta = STEP_TEMPLATES[state.currentStep];
+          const segmentsHtml = STEP_TEMPLATES.map(function (_, idx) {
+            let cls = "step-seg";
+            if (idx < state.currentStep) {
+              cls += state.answers[idx] === true ? " is-done" : " is-missed";
+            } else if (idx === state.currentStep) {
+              cls += " is-active";
+            }
+            return `<div class="${cls}"></div>`;
+          }).join("");
+
+          mainEl.innerHTML =
+            '<div class="reminder-bar">' +
+            `<span class="reminder-label">문제 ${problem.id}</span>` +
+            `<span class="reminder-formula math-expr">${problem.formula}</span>` +
+            "</div>" +
+            '<section class="notebook-card fade-enter" aria-label="단계별 자기점검">' +
+            `<div class="step-segments" aria-label="총 5단계 중 ${state.currentStep + 1}단계">${segmentsHtml}</div>` +
+            `<div class="step-counter">${state.currentStep + 1} / ${STEP_TEMPLATES.length} 단계</div>` +
+            `<h2 class="step-title">${stepMeta.label}</h2>` +
+            `<p class="step-question">${stepMeta.question}</p>` +
+            `<div class="step-tip"><strong>확인 포인트:</strong> ${stepMeta.tip}</div>` +
+            '<div class="btn-group-row">' +
+            '<button type="button" id="btn-step-missed" class="btn btn-missed">' +
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+            "안 했다" +
+            "</button>" +
+            '<button type="button" id="btn-step-done" class="btn btn-done">' +
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>' +
+            "했다" +
+            "</button>" +
+            "</div>" +
+            '<div class="step-nav-footer">' +
+            `<button type="button" id="btn-prev-step" class="text-nav-btn" ${state.currentStep === 0 ? "disabled" : ""}>` +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>' +
+            "이전 단계" +
+            "</button>" +
+            `<span class="meta-line" style="margin:0; font-size:0.8125rem;">내 노트를 보고 솔직하게 눌러주세요</span>` +
+            "</div>" +
+            "</section>";
+
+          document.getElementById("btn-step-done").addEventListener("click", function () {
+            answerStep(true);
+          });
+          document.getElementById("btn-step-missed").addEventListener("click", function () {
+            answerStep(false);
+          });
+          document.getElementById("btn-prev-step").addEventListener("click", goPrevStep);
+        }
+
+        function renderResultView(problem) {
+          const total = STEP_TEMPLATES.length;
+          const doneCount = state.answers.filter(function (a) {
+            return a === true;
+          }).length;
+          const missedCount = total - doneCount;
+          const percent = Math.round((doneCount / total) * 100);
+
+          let summaryHeading = "";
+          let summaryMsg = "";
+          if (doneCount === total) {
+            summaryHeading = "모든 단계를 빠짐없이 썼어요!";
+            summaryMsg = "감점 요소 없이 완벽한 서술형 풀이 흐름입니다. 아래에서 모범 풀이와 최종 답도 대조해 보세요.";
+          } else if (doneCount >= 3) {
+            summaryHeading = "거의 다 왔어요!";
+            summaryMsg = `부족한 ${missedCount}개 단계만 보완해서 노트에 채워 넣으면 감점을 확실히 막을 수 있어요.`;
+          } else {
+            summaryHeading = "지금 채우면 충분해요!";
+            summaryMsg = `비어 있는 ${missedCount}개 단계의 보완 포인트와 모범 풀이를 보고 노트에 다시 정리해 보세요.`;
+          }
+
+          const allExpanded = state.expandedSteps.every(Boolean);
+
+          const feedbackItemsHtml = STEP_TEMPLATES.map(function (stepMeta, idx) {
+            const isDone = state.answers[idx] === true;
+            const isOpen = state.expandedSteps[idx];
+            const problemStep = problem.steps[idx];
+            const advice = isDone
+              ? "잘 작성했어요! 모범 풀이와 식·기호 표현이 일치하는지 가볍게 확인해 보세요."
+              : problemStep.extraFeedbackIfMissed || stepMeta.feedbackIfMissed;
+
+            const statusIconSvg = isDone
+              ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>'
+              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+            return (
+              `<article class="feedback-item ${isDone ? "is-done" : "is-missed"} ${isOpen ? "is-open" : ""}" data-step-idx="${idx}">` +
+              `<button type="button" class="feedback-head" aria-expanded="${isOpen ? "true" : "false"}">` +
+              '<span class="feedback-head-left">' +
+              `<span class="status-icon">${statusIconSvg}</span>` +
+              `<span class="feedback-step-name">${stepMeta.shortName}</span>` +
+              "</span>" +
+              '<span class="feedback-head-right">' +
+              `<span class="status-label">${isDone ? "완료" : "보완 필요"}</span>` +
+              '<svg class="chevron-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
+              "</span>" +
+              "</button>" +
+              '<div class="feedback-body">' +
+              `<p class="feedback-advice">${advice}</p>` +
+              '<div class="model-sol-label">이 문제의 모범 풀이</div>' +
+              `<div class="model-sol-box">${problemStep.solutionHtml}</div>` +
+              "</div>" +
+              "</article>"
+            );
+          }).join("");
+
+          mainEl.innerHTML =
+            '<section class="notebook-card fade-enter" aria-label="점검 결과 요약">' +
+            '<div class="meta-line">' +
+            `<span>문제 ${problem.id}</span>` +
+            '<span class="meta-dot" aria-hidden="true">·</span>' +
+            `<span class="math-expr">${problem.formula}</span>` +
+            "</div>" +
+            '<div class="score-header">' +
+            `<h2 class="score-title">${summaryHeading}</h2>` +
+            `<div class="score-fraction" aria-label="5단계 중 ${doneCount}단계 완료">${doneCount} <span>/ ${total}</span></div>` +
+            "</div>" +
+            `<div class="result-progress-track" role="progressbar" aria-valuenow="${doneCount}" aria-valuemin="0" aria-valuemax="${total}" aria-label="점검 완료율 ${percent}%">` +
+            `<div class="result-progress-fill" style="width: ${percent}%"></div>` +
+            "</div>" +
+            `<p class="score-summary-msg">${summaryMsg}</p>` +
+            "</section>" +
+            '<div class="section-bar">' +
+            '<h3 class="section-heading">단계별 피드백 · 모범 풀이</h3>' +
+            `<button type="button" id="btn-toggle-all" class="header-link-btn">${allExpanded ? "모두 접기" : "모두 펼치기"}</button>` +
+            "</div>" +
+            `<div class="feedback-list">${feedbackItemsHtml}</div>` +
+            '<div class="btn-group-vertical desktop-row" style="margin-top: 4px;">' +
+            '<button type="button" id="btn-retry-same" class="btn btn-secondary">이 문제 다시 점검</button>' +
+            '<button type="button" id="btn-next-problem" class="btn btn-primary">다른 문제 풀기</button>' +
+            "</div>";
+
+          // 아코디언 토글 이벤트 연결
+          const heads = mainEl.querySelectorAll(".feedback-head");
+          heads.forEach(function (headBtn) {
+            headBtn.addEventListener("click", function () {
+              const article = headBtn.closest(".feedback-item");
+              const idx = Number(article.getAttribute("data-step-idx"));
+              state.expandedSteps[idx] = !state.expandedSteps[idx];
+              const openNow = state.expandedSteps[idx];
+              article.classList.toggle("is-open", openNow);
+              headBtn.setAttribute("aria-expanded", openNow ? "true" : "false");
+              updateToggleAllLabel();
+            });
+          });
+
+          document.getElementById("btn-toggle-all").addEventListener("click", function () {
+            const currentlyAllOpen = state.expandedSteps.every(Boolean);
+            const target = !currentlyAllOpen;
+            state.expandedSteps = state.expandedSteps.map(function () {
+              return target;
+            });
+            mainEl.querySelectorAll(".feedback-item").forEach(function (article) {
+              article.classList.toggle("is-open", target);
+              article.querySelector(".feedback-head").setAttribute("aria-expanded", target ? "true" : "false");
+            });
+            updateToggleAllLabel();
+          });
+
+          document.getElementById("btn-retry-same").addEventListener("click", startCheck);
+          document.getElementById("btn-next-problem").addEventListener("click", pickRandomOtherProblem);
+        }
+
+        function updateToggleAllLabel() {
+          const btn = document.getElementById("btn-toggle-all");
+          if (!btn) return;
+          btn.textContent = state.expandedSteps.every(Boolean) ? "모두 접기" : "모두 펼치기";
+        }
+
+        // 초기 렌더링
+        render();
+      })();
+    </script>
+  </body>
+</html>
